@@ -7,6 +7,7 @@ TagManager:
   - FxTemporaire
   - Path
   - Attacker
+  - WayPoint
   layers:
   - Default
   - TransparentFX
