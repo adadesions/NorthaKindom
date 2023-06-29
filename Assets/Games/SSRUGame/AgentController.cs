@@ -18,13 +18,8 @@ public class AgentController : MonoBehaviour
     private int _energy = 10;
     [SerializeField] private Transform _chargerStation;
     [SerializeField] private TextMeshProUGUI _energyUI;
-    
-
-    public int Energy
-    {
-        get => _energy;
-        set => _energy = value;
-    }
+    private bool _isChase = false;
+    [SerializeField] private float _rangeChasing = 2.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +37,19 @@ public class AgentController : MonoBehaviour
     void FixedUpdate()
     {
         Movements();
+        ChesingChecking();
+    }
+
+    private void ChesingChecking()
+    {
+        if (!_isChase) return;
+
+        var distance = (transform.position - _target.position).magnitude;
+        if (distance > _rangeChasing)
+        {
+            _isChase = false;
+            GoNextWayPoint();
+        }
     }
 
     private void Movements()
@@ -53,6 +61,8 @@ public class AgentController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (_isChase) return;
+        
         if (other.CompareTag("WayPoint"))
         {
             if (Time.time < _lastTimeNextTarget + _nextCooldown) return;
@@ -65,7 +75,7 @@ public class AgentController : MonoBehaviour
                 GoChargerStation();
                 return;
             }
-            GoNextWayPoint(_isWalkRandomly);
+            GoNextWayPoint();
         }
     }
 
@@ -79,11 +89,11 @@ public class AgentController : MonoBehaviour
         _target = _chargerStation;
     }
 
-    private void GoNextWayPoint(bool isRandom)
+    private void GoNextWayPoint()
     {
         int nextRand = Random.Range(0, _paths.Count);
         if (nextRand == _curWayPoint) nextRand++;
-        _curWayPoint = isRandom ? nextRand : _curWayPoint + 1;
+        _curWayPoint = _isWalkRandomly ? nextRand : _curWayPoint + 1;
         
         // if (isRandom)
         // {
@@ -100,5 +110,15 @@ public class AgentController : MonoBehaviour
         }
 
         _target = _paths[_curWayPoint];
+    }
+
+    public void SetTarget(Transform target)
+    {
+        _target = target;
+    }
+
+    public void SetIsChasing(bool isChase)
+    {
+        _isChase = isChase;
     }
 }
